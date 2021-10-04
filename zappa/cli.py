@@ -817,7 +817,10 @@ class ZappaCLI(object):
                 else:
                     self.zappa.add_api_stage_to_api_key(api_key=self.api_key, api_id=api_id, stage_name=self.api_stage)
 
-            if self.stage_config.get('touch', True):
+            if self.stage_config.get("touch", True):
+                self.zappa.wait_until_lambda_function_is_updated(
+                    function_name=self.lambda_name
+                )
                 self.touch_endpoint(endpoint_url)
 
         # Finally, delete the local copy our zip package
@@ -910,7 +913,16 @@ class ZappaCLI(object):
 
         # Register the Lambda function with that zip as the source
         # You'll also need to define the path to your lambda_handler code.
-        if source_zip and source_zip.startswith('s3://'):
+        kwargs = dict(
+            bucket=self.s3_bucket_name,
+            function_name=self.lambda_name,
+            num_revisions=self.num_retained_versions,
+            concurrency=self.lambda_concurrency,
+        )
+        if docker_image_uri:
+            kwargs["docker_image_uri"] = docker_image_uri
+            self.lambda_arn = self.zappa.update_lambda_function(**kwargs)
+        elif source_zip and source_zip.startswith("s3://"):
             bucket, key_name = parse_s3_url(source_zip)
             self.lambda_arn = self.zappa.update_lambda_function(
                                             bucket,
@@ -942,17 +954,19 @@ class ZappaCLI(object):
 
         # Update the configuration, in case there are changes.
         self.lambda_arn = self.zappa.update_lambda_configuration(
-                                                        lambda_arn=self.lambda_arn,
-                                                        function_name=self.lambda_name,
-                                                        handler=self.lambda_handler,
-                                                        description=self.lambda_description,
-                                                        vpc_config=self.vpc_config,
-                                                        timeout=self.timeout_seconds,
-                                                        memory_size=self.memory_size,
-                                                        runtime=self.runtime,
-                                                        aws_environment_variables=self.aws_environment_variables,
-                                                        aws_kms_key_arn=self.aws_kms_key_arn
-                                                    )
+            lambda_arn=self.lambda_arn,
+            function_name=self.lambda_name,
+            handler=self.lambda_handler,
+            description=self.lambda_description,
+            vpc_config=self.vpc_config,
+            timeout=self.timeout_seconds,
+            memory_size=self.memory_size,
+            runtime=self.runtime,
+            aws_environment_variables=self.aws_environment_variables,
+            aws_kms_key_arn=self.aws_kms_key_arn,
+            layers=self.layers,
+            wait=False,
+        )
 
         # Finally, delete the local copy our zip package
         if not source_zip and not no_upload:
@@ -1026,7 +1040,10 @@ class ZappaCLI(object):
                 if endpoint_url != api_url:
                     deployed_string = deployed_string + " (" + api_url + ")"
 
-            if self.stage_config.get('touch', True):
+            if self.stage_config.get("touch", True):
+                self.zappa.wait_until_lambda_function_is_updated(
+                    function_name=self.lambda_name
+                )
                 if api_url:
                     self.touch_endpoint(api_url)
                 elif endpoint_url:

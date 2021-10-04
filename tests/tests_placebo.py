@@ -144,6 +144,16 @@ class TestZappa(unittest.TestCase):
         function_arn = z.rollback_lambda_function_version(function_name, 1)
 
     @placebo_session
+    def test_rollback_lambda_function_version_docker(self, session):
+        z = Zappa(session)
+        z.credentials_arn = "arn:aws:iam::724336686645:role/ZappaLambdaExecution"
+
+        function_name = "django-helloworld-unicode"
+
+        with self.assertRaises(NotImplementedError):
+            z.rollback_lambda_function_version(function_name)
+
+    @placebo_session
     def test_invoke_lambda_function(self, session):
         z = Zappa(session)
         z.credentials_arn = 'arn:aws:iam::724336686645:role/ZappaLambdaExecution'
