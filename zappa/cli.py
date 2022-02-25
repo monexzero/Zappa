@@ -918,10 +918,7 @@ class ZappaCLI(object):
             function_name=self.lambda_name,
             num_revisions=self.num_retained_versions,
         )
-        if docker_image_uri:
-            kwargs["docker_image_uri"] = docker_image_uri
-            self.lambda_arn = self.zappa.update_lambda_function(**kwargs)
-        elif source_zip and source_zip.startswith("s3://"):
+        if source_zip and source_zip.startswith("s3://"):
             bucket, key_name = parse_s3_url(source_zip)
             self.lambda_arn = self.zappa.update_lambda_function(
                                             bucket,
