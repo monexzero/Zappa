@@ -917,7 +917,6 @@ class ZappaCLI(object):
             bucket=self.s3_bucket_name,
             function_name=self.lambda_name,
             num_revisions=self.num_retained_versions,
-            concurrency=self.lambda_concurrency,
         )
         if docker_image_uri:
             kwargs["docker_image_uri"] = docker_image_uri
