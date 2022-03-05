@@ -2982,7 +2982,7 @@ class Zappa:
 
         return permission_response
 
-    def schedule_events(self, lambda_arn, lambda_name, events, default=True):
+    def schedule_events(self, lambda_arn, lambda_name, events, default=True, event_source_arn=None):
         """
         Given a Lambda ARN, name and a list of events, schedule this as CloudWatch Events.
         'events' is a list of dictionaries, where the dict must contains the string
@@ -3057,9 +3057,11 @@ class Zappa:
                         )
 
                     # Specific permissions are necessary for any trigger to work.
-                    self.create_event_permission(
-                        lambda_name, "events.amazonaws.com", rule_response["RuleArn"]
-                    )
+                    rule_arn = rule_response['RuleArn']
+                    if not event_source_arn or not re.search(event_source_arn, rule_arn):
+                        self.create_event_permission(
+                            lambda_name, "events.amazonaws.com", rule_arn
+                        )
 
                     # Overwriting the input, supply the original values and add kwargs
                     input_template = (
@@ -3161,6 +3163,8 @@ class Zappa:
                         name
                     )
                 )
+            if event_source_arn:
+                self.create_event_permission(lambda_name, 'events.amazonaws.com', event_source_arn)
 
     @staticmethod
     def get_scheduled_event_name(event, function, lambda_name, index=0):
