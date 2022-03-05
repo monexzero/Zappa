@@ -1429,6 +1429,7 @@ class ZappaCLI:
                 lambda_name=self.lambda_name,
                 events=events,
                 event_source_arn=self.stage_config.get('cloudwatch_event_source_arn', None),
+                hashed_rule_name=self.stage_config.get('hashed_rule_name', True)
             )
 
         # Add async tasks SNS

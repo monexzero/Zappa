@@ -2982,7 +2982,7 @@ class Zappa:
 
         return permission_response
 
-    def schedule_events(self, lambda_arn, lambda_name, events, default=True, event_source_arn=None):
+    def schedule_events(self, lambda_arn, lambda_name, events, default=True, event_source_arn=None, hashed_rule_name=True):
         """
         Given a Lambda ARN, name and a list of events, schedule this as CloudWatch Events.
         'events' is a list of dictionaries, where the dict must contains the string
@@ -3036,7 +3036,7 @@ class Zappa:
                     )
                     # if it's possible that we truncated name, generate a unique, shortened name
                     # https://github.com/Miserlou/Zappa/issues/970
-                    if len(name) >= 64:
+                    if len(name) >= 64 and hashed_rule_name:
                         rule_name = self.get_hashed_rule_name(
                             event, function, lambda_name
                         )
