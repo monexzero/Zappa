@@ -3163,8 +3163,8 @@ class Zappa:
                         name
                     )
                 )
-            if event_source_arn:
-                self.create_event_permission(lambda_name, 'events.amazonaws.com', event_source_arn)
+        if event_source_arn:
+            self.create_event_permission(lambda_name, 'events.amazonaws.com', event_source_arn)
 
     @staticmethod
     def get_scheduled_event_name(event, function, lambda_name, index=0):
